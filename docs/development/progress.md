@@ -12,14 +12,14 @@
 - [x] Alinhamento e decisões técnicas fundamentais (Padrão OpenAI, Roteamento Dinâmico, SQLite Nativo, Stateful, Monitoramento de Custos).
 - [x] Atualização completa e governança do `docs/AGENTS.md`.
 - [x] Elaboração do `docs/development/development-plan.md`.
+- [x] Bootstrap do ambiente: `package.json`, `tsconfig.json`, `.gitignore`, `.env.example`, `README.md`, dependências instaladas (`fastify`, `zod`, `typescript`, `@types/node`) e validação do runner nativo (`node:test`).
 
 ## In Progress
 
-- [ ] Aprovação do Bootstrap e definição do Primeiro Incremento Funcional com o desenvolvedor.
+- [ ] Milestone 1 — Primeiro Incremento Funcional: Validação Estrita de Configuração (Fail-Fast) & Servidor Fastify com Health Check.
 
 ## Pending
 
-- [ ] Milestone 1: Bootstrap do projeto (package.json, tsconfig, config Zod fail-fast, Fastify health check).
 - [ ] Milestone 2: Persistência Stateful com SQLite nativo (`node:sqlite`).
 - [ ] Milestone 3: Core Domain — Estratégias de Roteamento e Fallback.
 - [ ] Milestone 4: Integração OpenRouter & Execução de Completions.
@@ -29,7 +29,9 @@
 ## Tests & Validation
 
 - Test Runner: `node:test` + `node:assert/strict`
-- Status: NOT EXECUTED (Aguardando inicialização do ambiente)
+- Typecheck: `tsc --noEmit` (0 erros)
+- Status: PASSED (Validação do ambiente e scripts executada com sucesso)
+
 
 ## Known Issues
 
