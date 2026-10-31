@@ -3,8 +3,8 @@
 ## Current Status
 
 - **Status:** DEVELOPMENT
-- **Last Update:** 2026-10-29
-- **Current Milestone:** Milestone 3 — Core Domain: Estratégias de Roteamento e Fallback
+- **Last Update:** 2026-10-30
+- **Current Milestone:** Milestone 4 — Integração OpenRouter & Execução com Fallback
 
 ## Completed
 
@@ -21,21 +21,25 @@
   - Repositório SQLite embutido via `node:sqlite` nativo (`src/infrastructure/database/sqlite-repository.ts`).
   - Criação automática e indexada de tabelas: `requests_log` (auditoria e custos), `model_metrics` (latência e throughput) e `models_cache` (catálogo local).
   - Suporte total a banco em memória (`:memory:`) para isolamento dos testes automatizados e graceful shutdown com hook `onClose` no Fastify.
-  - Testes unitários com 100% de sucesso.
+- [x] **Milestone 3 — Core Domain: Estratégias de Roteamento, Fallback e Custos:**
+  - Entidades de domínio (`ModelCandidate`, `RoutePlan`, `RoutingStrategyType`).
+  - Estratégias puras: `PriceStrategy`, `LatencyStrategy` e `ThroughputStrategy`.
+  - Motor de planejamento de rota e fallback sequencial (`RoutePlanner`).
+  - Calculador de custos monetários de tokens (`calculateCostUsd`).
+  - Cobertura 100% em testes unitários.
 
 ## In Progress
 
-- [ ] Milestone 3: Core Domain — Estratégias de Roteamento (Price, Latency, Throughput) e Motor de Fallback.
+- [ ] Milestone 4: Integração OpenRouter & Execução de Completions com Fallback Ativo.
 
 ## Pending
 
-- [ ] Milestone 4: Integração OpenRouter & Execução de Completions.
 - [ ] Milestone 5: Endpoint HTTP OpenAI-Compatible (`POST /v1/chat/completions`).
 - [ ] Milestone 6: Observabilidade com Langfuse / OTel & Evaluation Tests.
 
 ## Tests & Validation
 
-- Test Runner: `node:test` + `node:assert/strict` (8/8 testes passando)
+- Test Runner: `node:test` + `node:assert/strict` (17/17 testes passando)
 - Typecheck: `tsc --noEmit` (0 erros)
 - Status: PASSED
 
@@ -53,13 +57,14 @@
 
 ## Next Steps
 
-1. Iniciar o **Milestone 3**: Criar as entidades de domínio e as estratégias puras de ordenação de modelos (`PriceStrategy`, `LatencyStrategy`, `ThroughputStrategy`).
-2. Implementar a política de seleção com cadeia de fallback e cobertura total via TDD unitário.
+1. Iniciar o **Milestone 4**: Desenvolver o cliente de integração com o OpenRouter (`OpenRouterClient`) com suporte a timeout e mock nos testes.
+2. Implementar o `ExecutionService`, orquestrando a tentativa no modelo primário e a transição transparente para a cadeia de fallback em caso de erros elegíveis (429, 5xx, timeout), registrando a auditoria no SQLite.
 
 ## Last Completed Increment
 
-- **Description:** Implementação da camada de persistência com SQLite nativo do Node.js 24 (`node:sqlite`), tabelas de auditoria, métricas e catálogo em cache, com ciclo de vida acoplado ao Fastify.
-- **Files affected:** `src/infrastructure/database/sqlite-repository.ts`, `src/infrastructure/http/server.ts`, `tests/unit/database/sqlite-repository.test.ts`.
-- **Validation:** 8 testes automatizados executados e passando com sucesso; checagem estrita de tipos sem erros.
+- **Description:** Implementação das estratégias de roteamento puro (Preço, Latência, Throughput), motor de planejamento de rota com fallback (RoutePlanner) e cálculo de custos em USD.
+- **Files affected:** `src/core/entities/model-candidate.ts`, `src/core/entities/cost-calculator.ts`, `src/core/strategies/price-strategy.ts`, `src/core/strategies/latency-strategy.ts`, `src/core/strategies/throughput-strategy.ts`, `src/core/strategies/route-planner.ts`, `tests/unit/core/routing-strategies.test.ts`, `tests/unit/core/cost-calculator.test.ts`.
+- **Validation:** 17 testes automatizados executados e passando com sucesso; checagem estrita de tipos sem erros.
+
 
 
