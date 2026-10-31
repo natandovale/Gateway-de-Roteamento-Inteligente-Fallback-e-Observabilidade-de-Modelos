@@ -68,7 +68,56 @@ Este produto atua como uma camada inteligente intermediária (*gateway reverso*)
 5. Simple Design (XP): priorizar a solução mínima funcional sem abstrações prematuras.
 6. Enriquecimento sem quebra de contrato: dados analíticos adicionais trafegam preferencialmente via headers HTTP (`x-gateway-*`).
 
-## 2.2. Regras de Dependência
+## 2.2. Fluxo Visual de Requisição
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Cliente as Cliente (OpenAI SDK / cURL)
+    participant Fastify as Fastify HTTP Router
+    participant Zod as Validador Zod
+    participant RoutePlanner as RoutePlanner (Core)
+    participant SQLite as SQLite Nativo (node:sqlite)
+    participant ExecService as ExecutionService
+    participant OpenRouter as Provedor OpenRouter
+    participant ObsDispatcher as ObservabilityDispatcher (Langfuse/OTel)
+
+    Cliente->>Fastify: POST /v1/chat/completions (Header: x-routing-strategy)
+    Fastify->>Zod: Valida payload de entrada
+    alt Payload Inválido
+        Zod-->>Cliente: HTTP 400 (invalid_request_error)
+    end
+
+    Fastify->>SQLite: Consulta modelos em cache & métricas históricas
+    SQLite-->>Fastify: Candidatos (preço, latência média, throughput)
+    Fastify->>RoutePlanner: createPlan(strategy, requestedModel, candidates)
+    RoutePlanner-->>Fastify: RoutePlan [Modelo Primário, ...Cadeia Fallback]
+
+    Fastify->>ExecService: execute(plan, messages, options)
+    
+    rect rgb(240, 248, 255)
+        Note over ExecService,OpenRouter: Tentativa no Modelo Primário
+        ExecService->>OpenRouter: POST /chat/completions (Modelo Primário)
+        alt Falha Transitória (429 Rate Limit / 5xx / Timeout)
+            OpenRouter-->>ExecService: Erro 429 / 5xx / Timeout (Retryable)
+            Note over ExecService,OpenRouter: Fallback Automático transparente
+            ExecService->>OpenRouter: POST /chat/completions (Modelo de Fallback)
+            OpenRouter-->>ExecService: HTTP 200 (Sucesso com resposta)
+        else Sucesso Direto
+            OpenRouter-->>ExecService: HTTP 200 (Sucesso com resposta)
+        end
+    end
+
+    par Gravação de Estado & Observabilidade
+        ExecService->>SQLite: Grava log de auditoria (tokens, custo USD, fallback) & métricas
+        ExecService->>ObsDispatcher: Despacha traces assíncronos (Langfuse / OTel)
+    end
+
+    ExecService-->>Fastify: ExecutionResult (resposta, tokens, custo, latência)
+    Fastify-->>Cliente: HTTP 200 (Body OpenAI + Headers x-gateway-*)
+```
+
+## 2.3. Regras de Dependência
 
 - **Core / Domain:** Contém entidades, regras de roteamento (estratégias), contratos de repositório e cálculo de custos. Não depende de Fastify, SQLite ou bibliotecas externas de I/O.
 - **Services:** Casos de uso de orquestração de requisição, catálogo e fallback. Dependem apenas das abstrações do Core.
@@ -247,6 +296,109 @@ Todas as configurações sensíveis e operacionais são validadas no boot (`src/
 - Tabela `requests_log`: Histórico de requisições, tokens e custos para auditoria.
 - Tabela `model_metrics`: Amostras recentes de latência e throughput por modelo.
 - Tabela `models_cache`: Catálogo local de modelos e custos do OpenRouter.
+
+## 6.5. Exemplos de Requisição para Teste
+
+### Exemplo 1: Via cURL (Roteamento Dinâmico por Menor Preço)
+
+```bash
+curl -i -X POST http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "x-routing-strategy: price" \
+  -d '{
+    "model": "gateway/auto-cheap",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Explique em uma frase o conceito de Fail-Fast na engenharia de software."
+      }
+    ],
+    "temperature": 0.7
+  }'
+```
+
+#### Exemplo de Resposta Recebida:
+
+```http
+HTTP/1.1 200 OK
+content-type: application/json; charset=utf-8
+x-gateway-strategy: price
+x-gateway-model-requested: meta-llama/llama-3.1-8b-instruct
+x-gateway-model-executed: meta-llama/llama-3.1-8b-instruct
+x-gateway-fallback-triggered: false
+x-gateway-fallback-attempts: 0
+x-gateway-cost-usd: 0.000003
+x-gateway-latency-ms: 485
+
+{
+  "id": "chatcmpl-gateway-e2f91a0c",
+  "object": "chat.completion",
+  "created": 1729000000,
+  "model": "meta-llama/llama-3.1-8b-instruct",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Fail-Fast é o princípio de interromper imediatamente a execução ao detectar um erro ou inconsistência, facilitando o diagnóstico e prevenindo estados corrompidos."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 22,
+    "completion_tokens": 28,
+    "total_tokens": 50
+  }
+}
+```
+
+### Exemplo 2: Via OpenAI SDK (TypeScript / Node.js)
+
+```typescript
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+  baseURL: 'http://localhost:3000/v1',
+  apiKey: 'qualquer-string-ou-dummy', // O gateway utiliza sua OPENROUTER_API_KEY interna
+  defaultHeaders: {
+    'x-routing-strategy': 'latency', // Otimiza para o modelo com menor latência média
+  },
+});
+
+async function main() {
+  const completion = await client.chat.completions.create({
+    model: 'gateway/auto-fast',
+    messages: [{ role: 'user', content: 'Qual é o planeta mais próximo do Sol?' }],
+  });
+
+  console.log('Resposta:', completion.choices[0].message.content);
+}
+
+main();
+```
+
+### Exemplo 3: Requisição com Modelo Específico e Fallback Automático
+
+```bash
+# Se o modelo solicitado (ex: anthropic/claude-3.5-sonnet) estiver sob Rate Limit (429) ou indisponível,
+# o Gateway comuta automaticamente para o próximo melhor modelo e sinaliza nos headers:
+curl -i -X POST http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "x-routing-strategy: price" \
+  -d '{
+    "model": "anthropic/claude-3.5-sonnet",
+    "messages": [
+      { "role": "user", "content": "Olá!" }
+    ]
+  }'
+
+# Headers em caso de fallback disparado:
+# x-gateway-model-requested: anthropic/claude-3.5-sonnet
+# x-gateway-model-executed: openai/gpt-4o-mini
+# x-gateway-fallback-triggered: true
+# x-gateway-fallback-attempts: 1
+```
 
 ---
 

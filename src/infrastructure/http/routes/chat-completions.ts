@@ -48,7 +48,45 @@ export const chatCompletionsRoutes: FastifyPluginAsync<ChatCompletionsRouteOptio
         : opts.defaultStrategy;
 
     // 3. Obtenção dos candidatos a partir do cache e métricas do SQLite
-    const cachedModels = opts.db.getCachedModels();
+    let cachedModels = opts.db.getCachedModels();
+
+    const defaultCatalog = [
+      {
+        id: 'meta-llama/llama-3.1-8b-instruct',
+        name: 'Llama 3.1 8B Instruct',
+        promptPricePerMillion: 0.05,
+        completionPricePerMillion: 0.08,
+        contextLength: 131072,
+      },
+      {
+        id: 'openai/gpt-4o-mini',
+        name: 'GPT-4o Mini',
+        promptPricePerMillion: 0.15,
+        completionPricePerMillion: 0.60,
+        contextLength: 128000,
+      },
+      {
+        id: 'deepseek/deepseek-chat',
+        name: 'DeepSeek V3',
+        promptPricePerMillion: 0.14,
+        completionPricePerMillion: 0.28,
+        contextLength: 64000,
+      },
+      {
+        id: 'qwen/qwen-2.5-72b-instruct',
+        name: 'Qwen 2.5 72B Instruct',
+        promptPricePerMillion: 0.35,
+        completionPricePerMillion: 0.40,
+        contextLength: 32768,
+      },
+    ];
+
+    // Se o banco ainda não tiver modelos populados, inicializa com modelos confiáveis do OpenRouter
+    if (cachedModels.length === 0) {
+      opts.db.saveModelsCache(defaultCatalog);
+      cachedModels = opts.db.getCachedModels();
+    }
+
     let candidates: ModelCandidate[] = cachedModels.map((m: any) => {
       const summary = opts.db.getModelPerformanceSummary(m.id);
       return {
@@ -61,19 +99,6 @@ export const chatCompletionsRoutes: FastifyPluginAsync<ChatCompletionsRouteOptio
         avgThroughputTps: summary?.avg_throughput_tps,
       };
     });
-
-    // Se nenhum modelo estiver no cache, cria candidato a partir do modelo solicitado
-    if (candidates.length === 0) {
-      candidates = [
-        {
-          id: model,
-          name: model,
-          promptPricePerMillion: 0.1,
-          completionPricePerMillion: 0.2,
-          contextLength: 128000,
-        },
-      ];
-    }
 
     // 4. Criação do plano de rota
     const isDynamicModel = model.startsWith('gateway/auto-') || model === 'default';

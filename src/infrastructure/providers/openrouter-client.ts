@@ -100,7 +100,8 @@ export class OpenRouterClient {
         const errorMessage =
           errorData?.error?.message ?? `Erro HTTP ${response.status} do OpenRouter`;
         const statusCode = response.status;
-        const isRetryable = statusCode === 429 || statusCode >= 500;
+        // Erros 404 (modelo descontinuado/inexistente no provedor), 429 (rate limit) ou >= 500 são elegíveis para fallback imediato
+        const isRetryable = statusCode === 404 || statusCode === 429 || statusCode >= 500;
 
         throw new OpenRouterError(errorMessage, {
           statusCode,

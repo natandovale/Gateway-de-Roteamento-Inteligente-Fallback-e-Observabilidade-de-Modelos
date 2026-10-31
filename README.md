@@ -42,16 +42,19 @@ npm run dev
 npm test
 
 # 5. Checagem de tipos estáticos
-npm run typecheck
+# 6. Testes Rápidos via cURL
+./scripts/test-request.sh price gateway/auto-cheap "Explique o conceito de Fail-Fast."
 ```
 
 ---
 
-## Governança e Arquitetura
+## Governança, Tutoriais e Arquitetura
 
-As diretrizes técnicas, regras de Extreme Programming (XP), ADRs e histórico de progresso estão documentados na pasta `docs/`:
+As diretrizes técnicas, regras de Extreme Programming (XP), tutoriais e histórico de progresso estão documentados na pasta `docs/`:
 
-- [AGENTS.md](docs/AGENTS.md) — Documento central de arquitetura e governança.
+- [AGENTS.md](docs/AGENTS.md) — Documento central de arquitetura, fluxo e governança.
+- [docs/tutorial-curl.md](docs/tutorial-curl.md) — Tutorial detalhado de execução de testes via cURL.
 - [docs/development/development-plan.md](docs/development/development-plan.md) — Plano incremental de desenvolvimento.
 - [docs/development/progress.md](docs/development/progress.md) — Registro de progresso contínuo.
 - [docs/architecture/decisions/](docs/architecture/decisions/) — Architecture Decision Records (ADRs).
+

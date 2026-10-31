@@ -5,8 +5,8 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "node --watch --experimental-strip-types src/index.ts",
-    "start": "node --experimental-strip-types src/index.ts",
+    "dev": "node --env-file=.env --watch --experimental-strip-types src/index.ts",
+    "start": "node --env-file=.env --experimental-strip-types src/index.ts",
     "test": "node --experimental-strip-types --test tests/**/*.test.ts tests/unit/**/*.test.ts tests/integration/**/*.test.ts tests/evals/**/*.test.ts",
     "test:unit": "node --experimental-strip-types --test tests/unit/**/*.test.ts",
     "test:integration": "node --experimental-strip-types --test tests/integration/**/*.test.ts",
