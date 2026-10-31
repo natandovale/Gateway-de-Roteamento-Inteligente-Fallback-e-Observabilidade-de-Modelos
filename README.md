@@ -54,6 +54,7 @@ As diretrizes técnicas, regras de Extreme Programming (XP), tutoriais e histór
 
 - [AGENTS.md](docs/AGENTS.md) — Documento central de arquitetura, fluxo e governança.
 - [docs/tutorial-curl.md](docs/tutorial-curl.md) — Tutorial detalhado de execução de testes via cURL.
+- [docs/explicacoes-tecnicas.md](docs/explicacoes-tecnicas.md) — Explicações técnicas detalhadas sobre fallbacks, route planner e algoritmos de ordenação.
 - [docs/development/development-plan.md](docs/development/development-plan.md) — Plano incremental de desenvolvimento.
 - [docs/development/progress.md](docs/development/progress.md) — Registro de progresso contínuo.
 - [docs/architecture/decisions/](docs/architecture/decisions/) — Architecture Decision Records (ADRs).

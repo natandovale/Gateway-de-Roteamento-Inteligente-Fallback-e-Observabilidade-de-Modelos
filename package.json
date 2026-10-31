@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "node --env-file=.env --watch --experimental-strip-types src/index.ts",
     "start": "node --env-file=.env --experimental-strip-types src/index.ts",
+    "debug": "node --inspect=0.0.0.0:9229 --env-file=.env --experimental-strip-types src/index.ts",
+    "debug:brk": "node --inspect-brk=0.0.0.0:9229 --env-file=.env --experimental-strip-types src/index.ts",
     "test": "node --experimental-strip-types --test tests/**/*.test.ts tests/unit/**/*.test.ts tests/integration/**/*.test.ts tests/evals/**/*.test.ts",
+    "test:debug": "node --inspect-brk=0.0.0.0:9229 --experimental-strip-types --test tests/**/*.test.ts",
     "test:unit": "node --experimental-strip-types --test tests/unit/**/*.test.ts",
     "test:integration": "node --experimental-strip-types --test tests/integration/**/*.test.ts",
     "test:evals": "node --experimental-strip-types --test tests/evals/**/*.test.ts",
