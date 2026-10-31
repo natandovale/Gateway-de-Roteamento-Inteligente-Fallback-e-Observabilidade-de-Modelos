@@ -2,9 +2,9 @@
 
 ## Current Status
 
-- **Status:** DEVELOPMENT
+- **Status:** COMPLETED
 - **Last Update:** 2026-10-30
-- **Current Milestone:** Milestone 6 — Observabilidade com Langfuse / OTel & Evaluation Tests
+- **Current Milestone:** Milestone 6 — Observabilidade com Langfuse / OTel & Evaluation Tests (Concluído)
 
 ## Completed
 
@@ -32,21 +32,23 @@
 - [x] **Milestone 5 — Endpoint HTTP OpenAI-Compatible (`POST /v1/chat/completions`):**
   - Schema de validação Zod para payloads de chat completions (`src/infrastructure/http/schemas/chat-completions.ts`).
   - Rota `POST /v1/chat/completions` com suporte a estratégia de roteamento dinâmica via header `x-routing-strategy`.
-  - Resposta estritamente compatível com o formato OpenAI e enriquecida com os headers `x-gateway-*` (`x-gateway-strategy`, `x-gateway-model-requested`, `x-gateway-model-executed`, `x-gateway-fallback-triggered`, `x-gateway-fallback-attempts`, `x-gateway-cost-usd`, `x-gateway-latency-ms`).
-  - Respostas de erro padronizadas no formato oficial da OpenAI.
-  - Testes de integração de ponta a ponta com `fastify.inject()`.
+  - Resposta estritamente compatível com o formato OpenAI e enriquecida com os headers `x-gateway-*`.
+- [x] **Milestone 6 — Observabilidade com Langfuse / OTel & Evaluation Tests:**
+  - `ObservabilityDispatcher` (`src/infrastructure/observability/observability-dispatcher.ts`) desacoplado e resiliente a falhas externas de monitoramento.
+  - `LangfuseAdapter` (`src/infrastructure/observability/langfuse-adapter.ts`) para envio assíncrono de traces, gerações e custos calculados.
+  - Avaliador automatizado de prompts `PromptEvaluator` (`src/core/evals/prompt-evaluator.ts`) e suíte de testes de avaliação de prompts em `tests/evals/prompt-evaluator.test.ts`.
 
 ## In Progress
 
-- [ ] Milestone 6: Observabilidade com Langfuse / OTel & Evaluation Tests.
+- [ ] Nenhuma tarefa em andamento. Todos os marcos planejados foram concluídos com sucesso.
 
 ## Pending
 
-- [ ] Nenhuma funcionalidade de entrega pendente após a conclusão da observabilidade.
+- [ ] Nenhuma pendência funcional. O produto atende a 100% do escopo aprovado no AGENTS.md.
 
 ## Tests & Validation
 
-- Test Runner: `node:test` + `node:assert/strict` (25/25 testes passando)
+- Test Runner: `node:test` + `node:assert/strict` (30/30 testes passando)
 - Typecheck: `tsc --noEmit` (0 erros)
 - Status: PASSED
 
@@ -64,15 +66,15 @@
 
 ## Next Steps
 
-1. Iniciar o **Milestone 6**: Implementar o despachante de observabilidade (`ObservabilityDispatcher` para Langfuse e OpenTelemetry).
-2. Criar suíte de testes de avaliação de prompts (*Evaluation Tests*) em `tests/evals/`.
-3. Validar a execução completa do gateway de ponta a ponta.
+1. Commit final do Milestone 6 no Git.
+2. Demonstração de uso e encerramento do ciclo de Pair Programming.
 
 ## Last Completed Increment
 
-- **Description:** Implementação da rota POST /v1/chat/completions compatível com OpenAI, headers x-gateway-*, validação de schema Zod e injeção do OpenRouterClient no servidor Fastify.
-- **Files affected:** `src/infrastructure/http/schemas/chat-completions.ts`, `src/infrastructure/http/routes/chat-completions.ts`, `src/infrastructure/http/server.ts`, `tests/integration/routes/chat-completions.test.ts`.
-- **Validation:** 25 testes automatizados executados e passando com sucesso; checagem estrita de tipos sem erros.
+- **Description:** Implementação do despachante de observabilidade (Langfuse e OTel), integração no ExecutionService e criação do PromptEvaluator com suíte de Evaluation Tests automatizados.
+- **Files affected:** `src/infrastructure/observability/observability-dispatcher.ts`, `src/infrastructure/observability/langfuse-adapter.ts`, `src/core/evals/prompt-evaluator.ts`, `src/services/execution-service.ts`, `tests/unit/observability/observability-dispatcher.test.ts`, `tests/evals/prompt-evaluator.test.ts`.
+- **Validation:** 30 testes automatizados executados e passando com sucesso; checagem estrita de tipos sem erros.
+
 
 
 

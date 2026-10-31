@@ -1,6 +1,7 @@
 import type { RoutePlan, ModelCandidate } from '../core/entities/model-candidate.ts';
 import { calculateCostUsd } from '../core/entities/cost-calculator.ts';
 import type { SqliteRepository } from '../infrastructure/database/sqlite-repository.ts';
+import type { ObservabilityDispatcher } from '../infrastructure/observability/observability-dispatcher.ts';
 import {
   OpenRouterClient,
   OpenRouterError,
@@ -30,15 +31,18 @@ export interface ExecutionResult {
 export interface ExecutionServiceDependencies {
   client: OpenRouterClient;
   repository: SqliteRepository;
+  observability?: ObservabilityDispatcher;
 }
 
 export class ExecutionService {
   private client: OpenRouterClient;
   private repository: SqliteRepository;
+  private observability?: ObservabilityDispatcher;
 
   constructor(dependencies: ExecutionServiceDependencies) {
     this.client = dependencies.client;
     this.repository = dependencies.repository;
+    this.observability = dependencies.observability;
   }
 
   public async execute(params: ExecuteParams): Promise<ExecutionResult> {
@@ -104,6 +108,25 @@ export class ExecutionService {
           fallbackAttempts,
           statusCode: 200,
         });
+
+        // Notifica adaptadores de observabilidade (Langfuse/OTel)
+        if (this.observability) {
+          await this.observability.recordTrace({
+            requestId,
+            timestamp: new Date().toISOString(),
+            strategy: plan.strategy,
+            modelRequested: plan.primaryModel.id,
+            modelExecuted: candidate.id,
+            promptTokens,
+            completionTokens,
+            totalTokens,
+            costUsd,
+            latencyMs,
+            fallbackTriggered: isFallback,
+            fallbackAttempts,
+            statusCode: 200,
+          });
+        }
 
         return {
           requestId,

@@ -7,9 +7,10 @@
   "scripts": {
     "dev": "node --watch --experimental-strip-types src/index.ts",
     "start": "node --experimental-strip-types src/index.ts",
-    "test": "node --experimental-strip-types --test tests/**/*.test.ts",
+    "test": "node --experimental-strip-types --test tests/**/*.test.ts tests/unit/**/*.test.ts tests/integration/**/*.test.ts tests/evals/**/*.test.ts",
     "test:unit": "node --experimental-strip-types --test tests/unit/**/*.test.ts",
     "test:integration": "node --experimental-strip-types --test tests/integration/**/*.test.ts",
+    "test:evals": "node --experimental-strip-types --test tests/evals/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
