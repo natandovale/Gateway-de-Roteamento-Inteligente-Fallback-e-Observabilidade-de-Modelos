@@ -4,7 +4,7 @@
 
 - **Status:** DEVELOPMENT
 - **Last Update:** 2026-10-30
-- **Current Milestone:** Milestone 5 — Endpoint HTTP OpenAI-Compatible (`POST /v1/chat/completions`)
+- **Current Milestone:** Milestone 6 — Observabilidade com Langfuse / OTel & Evaluation Tests
 
 ## Completed
 
@@ -26,22 +26,27 @@
   - Estratégias puras: `PriceStrategy`, `LatencyStrategy` e `ThroughputStrategy`.
   - Motor de planejamento de rota e fallback sequencial (`RoutePlanner`).
   - Calculador de custos monetários de tokens (`calculateCostUsd`).
-- [x] **Milestone 4 — Integração OpenRouter & Execução de Completions com Fallback Ativo:**
+- [x] **Milestone 4 — Integração OpenRouter & Execução com Fallback Ativo:**
   - Cliente HTTP upstream resiliente (`OpenRouterClient`) com timeout parametrizável via `AbortController` e tratamento de erros retryable (429, 5xx, timeouts).
   - Serviço de orquestração (`ExecutionService`) que executa a tentativa no modelo primário, comuta de forma transparente para a cadeia de fallback em caso de falha temporária e audita detalhadamente no SQLite cada requisição com custos e tokens.
-  - Cobertura de testes unitários com 100% de sucesso.
+- [x] **Milestone 5 — Endpoint HTTP OpenAI-Compatible (`POST /v1/chat/completions`):**
+  - Schema de validação Zod para payloads de chat completions (`src/infrastructure/http/schemas/chat-completions.ts`).
+  - Rota `POST /v1/chat/completions` com suporte a estratégia de roteamento dinâmica via header `x-routing-strategy`.
+  - Resposta estritamente compatível com o formato OpenAI e enriquecida com os headers `x-gateway-*` (`x-gateway-strategy`, `x-gateway-model-requested`, `x-gateway-model-executed`, `x-gateway-fallback-triggered`, `x-gateway-fallback-attempts`, `x-gateway-cost-usd`, `x-gateway-latency-ms`).
+  - Respostas de erro padronizadas no formato oficial da OpenAI.
+  - Testes de integração de ponta a ponta com `fastify.inject()`.
 
 ## In Progress
 
-- [ ] Milestone 5: Endpoint HTTP OpenAI-Compatible (`POST /v1/chat/completions`).
+- [ ] Milestone 6: Observabilidade com Langfuse / OTel & Evaluation Tests.
 
 ## Pending
 
-- [ ] Milestone 6: Observabilidade com Langfuse / OTel & Evaluation Tests.
+- [ ] Nenhuma funcionalidade de entrega pendente após a conclusão da observabilidade.
 
 ## Tests & Validation
 
-- Test Runner: `node:test` + `node:assert/strict` (23/23 testes passando)
+- Test Runner: `node:test` + `node:assert/strict` (25/25 testes passando)
 - Typecheck: `tsc --noEmit` (0 erros)
 - Status: PASSED
 
@@ -59,15 +64,16 @@
 
 ## Next Steps
 
-1. Iniciar o **Milestone 5**: Criar o schema de validação Zod para requisições de chat completions (`src/infrastructure/http/schemas/chat-completions.ts`).
-2. Criar a rota `POST /v1/chat/completions` no Fastify conectando o `RoutePlanner` e o `ExecutionService`, retornando o payload padrão OpenAI e os headers `x-gateway-*`.
-3. Validar via testes de integração com `fastify.inject()`.
+1. Iniciar o **Milestone 6**: Implementar o despachante de observabilidade (`ObservabilityDispatcher` para Langfuse e OpenTelemetry).
+2. Criar suíte de testes de avaliação de prompts (*Evaluation Tests*) em `tests/evals/`.
+3. Validar a execução completa do gateway de ponta a ponta.
 
 ## Last Completed Increment
 
-- **Description:** Implementação do cliente OpenRouter com timeout via AbortController e do ExecutionService orquestrando tentativas, fallback resiliente e auditoria no SQLite.
-- **Files affected:** `src/infrastructure/providers/openrouter-client.ts`, `src/services/execution-service.ts`, `tests/unit/providers/openrouter-client.test.ts`, `tests/unit/services/execution-service.test.ts`.
-- **Validation:** 23 testes automatizados executados e passando com sucesso; checagem estrita de tipos sem erros.
+- **Description:** Implementação da rota POST /v1/chat/completions compatível com OpenAI, headers x-gateway-*, validação de schema Zod e injeção do OpenRouterClient no servidor Fastify.
+- **Files affected:** `src/infrastructure/http/schemas/chat-completions.ts`, `src/infrastructure/http/routes/chat-completions.ts`, `src/infrastructure/http/server.ts`, `tests/integration/routes/chat-completions.test.ts`.
+- **Validation:** 25 testes automatizados executados e passando com sucesso; checagem estrita de tipos sem erros.
+
 
 
 
