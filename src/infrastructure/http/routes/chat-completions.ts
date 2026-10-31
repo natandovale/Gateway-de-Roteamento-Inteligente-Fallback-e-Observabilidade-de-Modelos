@@ -6,10 +6,13 @@ import { ExecutionService } from '../../../services/execution-service.ts';
 import { RoutePlanner } from '../../../core/strategies/route-planner.ts';
 import type { ModelCandidate, RoutingStrategyType } from '../../../core/entities/model-candidate.ts';
 
+import type { ObservabilityDispatcher } from '../../observability/observability-dispatcher.ts';
+
 export interface ChatCompletionsRouteOptions {
   db: SqliteRepository;
   client: OpenRouterClient;
   defaultStrategy: RoutingStrategyType;
+  observability?: ObservabilityDispatcher;
 }
 
 export const chatCompletionsRoutes: FastifyPluginAsync<ChatCompletionsRouteOptions> = async (
@@ -19,6 +22,7 @@ export const chatCompletionsRoutes: FastifyPluginAsync<ChatCompletionsRouteOptio
   const executionService = new ExecutionService({
     client: opts.client,
     repository: opts.db,
+    observability: opts.observability,
   });
 
   const routePlanner = new RoutePlanner();

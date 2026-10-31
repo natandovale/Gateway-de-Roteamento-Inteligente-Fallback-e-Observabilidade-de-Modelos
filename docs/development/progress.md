@@ -34,13 +34,13 @@
   - Rota `POST /v1/chat/completions` com suporte a estratégia de roteamento dinâmica via header `x-routing-strategy`.
   - Resposta estritamente compatível com o formato OpenAI e enriquecida com os headers `x-gateway-*`.
 - [x] **Milestone 6 — Observabilidade com Langfuse / OTel & Evaluation Tests:**
-  - `ObservabilityDispatcher` (`src/infrastructure/observability/observability-dispatcher.ts`) desacoplado e resiliente a falhas externas de monitoramento.
-  - `LangfuseAdapter` (`src/infrastructure/observability/langfuse-adapter.ts`) para envio assíncrono de traces, gerações e custos calculados.
+  - `ObservabilityDispatcher` (`src/infrastructure/observability/observability-dispatcher.ts`) desacoplado e resiliente a falhas externas de monitoramento, agora injetado nativamente no `buildServer` e repassado ao `ExecutionService`.
+  - `LangfuseAdapter` (`src/infrastructure/observability/langfuse-adapter.ts`) implementado com o padrão moderno OTLP HTTP v4 (`/api/public/otel/v1/traces`), compatível com o Langfuse Cloud (v4.72+), registrando traces, gerações, custos e metadados.
   - Avaliador automatizado de prompts `PromptEvaluator` (`src/core/evals/prompt-evaluator.ts`) e suíte de testes de avaliação de prompts em `tests/evals/prompt-evaluator.test.ts`.
 
 ## In Progress
 
-- [ ] Nenhuma tarefa em andamento. Todos os marcos planejados foram concluídos com sucesso.
+- [ ] Nenhuma tarefa em andamento. Integração do Langfuse ativada e validada em tempo real.
 
 ## Pending
 
@@ -48,7 +48,7 @@
 
 ## Tests & Validation
 
-- Test Runner: `node:test` + `node:assert/strict` (30/30 testes passando)
+- Test Runner: `node:test` + `node:assert/strict` (33/33 testes passando)
 - Typecheck: `tsc --noEmit` (0 erros)
 - Status: PASSED
 
