@@ -4,7 +4,7 @@
 
 - **Status:** DEVELOPMENT
 - **Last Update:** 2026-10-30
-- **Current Milestone:** Milestone 4 — Integração OpenRouter & Execução com Fallback
+- **Current Milestone:** Milestone 5 — Endpoint HTTP OpenAI-Compatible (`POST /v1/chat/completions`)
 
 ## Completed
 
@@ -26,20 +26,22 @@
   - Estratégias puras: `PriceStrategy`, `LatencyStrategy` e `ThroughputStrategy`.
   - Motor de planejamento de rota e fallback sequencial (`RoutePlanner`).
   - Calculador de custos monetários de tokens (`calculateCostUsd`).
-  - Cobertura 100% em testes unitários.
+- [x] **Milestone 4 — Integração OpenRouter & Execução de Completions com Fallback Ativo:**
+  - Cliente HTTP upstream resiliente (`OpenRouterClient`) com timeout parametrizável via `AbortController` e tratamento de erros retryable (429, 5xx, timeouts).
+  - Serviço de orquestração (`ExecutionService`) que executa a tentativa no modelo primário, comuta de forma transparente para a cadeia de fallback em caso de falha temporária e audita detalhadamente no SQLite cada requisição com custos e tokens.
+  - Cobertura de testes unitários com 100% de sucesso.
 
 ## In Progress
 
-- [ ] Milestone 4: Integração OpenRouter & Execução de Completions com Fallback Ativo.
+- [ ] Milestone 5: Endpoint HTTP OpenAI-Compatible (`POST /v1/chat/completions`).
 
 ## Pending
 
-- [ ] Milestone 5: Endpoint HTTP OpenAI-Compatible (`POST /v1/chat/completions`).
 - [ ] Milestone 6: Observabilidade com Langfuse / OTel & Evaluation Tests.
 
 ## Tests & Validation
 
-- Test Runner: `node:test` + `node:assert/strict` (17/17 testes passando)
+- Test Runner: `node:test` + `node:assert/strict` (23/23 testes passando)
 - Typecheck: `tsc --noEmit` (0 erros)
 - Status: PASSED
 
@@ -57,14 +59,17 @@
 
 ## Next Steps
 
-1. Iniciar o **Milestone 4**: Desenvolver o cliente de integração com o OpenRouter (`OpenRouterClient`) com suporte a timeout e mock nos testes.
-2. Implementar o `ExecutionService`, orquestrando a tentativa no modelo primário e a transição transparente para a cadeia de fallback em caso de erros elegíveis (429, 5xx, timeout), registrando a auditoria no SQLite.
+1. Iniciar o **Milestone 5**: Criar o schema de validação Zod para requisições de chat completions (`src/infrastructure/http/schemas/chat-completions.ts`).
+2. Criar a rota `POST /v1/chat/completions` no Fastify conectando o `RoutePlanner` e o `ExecutionService`, retornando o payload padrão OpenAI e os headers `x-gateway-*`.
+3. Validar via testes de integração com `fastify.inject()`.
 
 ## Last Completed Increment
 
-- **Description:** Implementação das estratégias de roteamento puro (Preço, Latência, Throughput), motor de planejamento de rota com fallback (RoutePlanner) e cálculo de custos em USD.
-- **Files affected:** `src/core/entities/model-candidate.ts`, `src/core/entities/cost-calculator.ts`, `src/core/strategies/price-strategy.ts`, `src/core/strategies/latency-strategy.ts`, `src/core/strategies/throughput-strategy.ts`, `src/core/strategies/route-planner.ts`, `tests/unit/core/routing-strategies.test.ts`, `tests/unit/core/cost-calculator.test.ts`.
-- **Validation:** 17 testes automatizados executados e passando com sucesso; checagem estrita de tipos sem erros.
+- **Description:** Implementação do cliente OpenRouter com timeout via AbortController e do ExecutionService orquestrando tentativas, fallback resiliente e auditoria no SQLite.
+- **Files affected:** `src/infrastructure/providers/openrouter-client.ts`, `src/services/execution-service.ts`, `tests/unit/providers/openrouter-client.test.ts`, `tests/unit/services/execution-service.test.ts`.
+- **Validation:** 23 testes automatizados executados e passando com sucesso; checagem estrita de tipos sem erros.
+
+
 
 
 
